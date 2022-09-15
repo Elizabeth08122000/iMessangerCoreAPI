@@ -20,6 +20,7 @@ namespace iMessangerCoreAPI.Controllers
             _logger = logger;
         }
 
+        [Route("Init")]
         [HttpGet]
         public List<RGDialogsClients> Init()
         {
@@ -100,6 +101,7 @@ namespace iMessangerCoreAPI.Controllers
             return L1;
         }
 
+        [Route("FindDialog")]
         [HttpPost]
         public Guid FindDialog(List<Guid> gDialogsClients)
         {
