@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace iMessangerCoreAPI.Controllers
 {
@@ -108,28 +110,34 @@ namespace iMessangerCoreAPI.Controllers
             Guid idDialog = default;
             try
             {
-                var listDialogs = Init().GroupBy(x => x.IDRGDialog);
                 int countClient = 0;
-                foreach (var gDialog in listDialogs)
+
+                var dialog = Init().GroupBy(x => x.IDRGDialog)
+                                    .Select(group => new { 
+                                        DialogClient = group.Key,
+                                        Clients = group.ToList()
+                                    }).ToList();
+
+                foreach(var item in dialog)
                 {
-                    foreach (var dClient in gDialog)
+                    if (item.Clients.Count() == gDialogsClients.Count())
                     {
-                        if (countClient < gDialogsClients.Count() && gDialogsClients.Count() == gDialog.Count())
+                        foreach(var client in item.Clients)
                         {
-                            if (dClient.IDClient == gDialogsClients.ElementAtOrDefault(countClient))
+                            if (gDialogsClients.Contains(client.IDClient))
                             {
-                                idDialog = gDialog.Key;
+                                var idDial = item.DialogClient;
+                                countClient += 1;
+                                if(countClient == gDialogsClients.Count())
+                                {
+                                    idDialog = idDial;
+                                }
                             }
                         }
-                        else
-                        {
-                            countClient = 0;
-                            break;
-                        }
-                        countClient += 1;
+                        
                     }
-
                 }
+                               
             }
             catch(BadHttpRequestException ex)
             {
